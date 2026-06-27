@@ -334,40 +334,15 @@ function refresh(wgt)
   wgt.modelName = modelInfo.name
   wgt.modelBitmap = modelInfo.bitmap
 
-  local displayStartIdx = 1
-
-
-  --print("[Widget-Log] activeSensorCount: " .. wgt.activeSensorCount)
-  --print("[Widget-Log] displayStartIdx: " .. displayStartIdx)
-
   for i = 1, (wgt.activeSensorCount or 0) do
     local optKey = "Value" .. tostring(i)
     local sourceId = wgt.options[optKey]
 
     if sourceId and sourceId ~= 0 then
       local valStr, _ = formatCachedField(sourceId)
-      -- if isTimer(sourceId) then
-      --   local t = getValue(toTitleCase(sourceId))
-      --   wgt.displayData[displayStartIdx].value = hms(t)
-      -- else
-        wgt.displayData[displayStartIdx].value = valStr
-      -- end
-      --print("[Widget-Log] sourceId - valStr: " .. sourceId .. " - " ..valStr)
-
-      displayStartIdx = displayStartIdx + 1
+      wgt.displayData[i].value = valStr
     end
   end
-
-  -- timer
-  -- if wgt.options["Timer"] == 1 then
-  --   for i = 1, 2 do
-  --     local optKey = "timer" .. tostring(i)
-  --     local t = getValue(optKey)
-
-  --     wgt.displayData[i].name = "T" .. tostring(i)
-  --     wgt.displayData[i].value = hms(t)
-  --   end
-  -- end
 end
 
 return { name = "Dashboard", options = options, create = create, update = update, refresh = refresh, background =
