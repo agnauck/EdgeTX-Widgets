@@ -1,3 +1,23 @@
+--[[
+AUTHOR
+======
+Alexander Gnauck (gnauck@gmail.com)
+
+LICENSE
+=======
+This script is provided under the GNU General Public License v3.
+See <https://www.gnu.org/licenses/gpl-3.0.en.html> for details.
+
+DESCRIPTION
+===========
+Displays info about the active model, including name ad image.
+Additional up to 10 values can be configured to be shown on the screen
+
+The is build on the new LVGL LUA API and works only nn color ui radios.
+Currently its only optimized for landscape screem, portrait may be added in 
+future versions.
+--]]
+
 -- docs: https://luadoc.edgetx.org/lua-api-reference/constants/units
 local UNIT_STRINGS = {
   [0] = "",       -- UNIT_RAW  
@@ -73,10 +93,10 @@ end
 local options = {
   { "Value1",  SOURCE, getSensorId("tx-voltage") },
   { "Value2",  SOURCE, getSensorId("RxBt") },
-  { "Value3",  SOURCE, getSensorId("RQly") },
-  { "Value4",  SOURCE, getSensorId("TPWR") },
-  { "Value5",  SOURCE, getSensorId("RQly-") },
-  { "Value6",  SOURCE, getSensorId("Alt+") },
+  { "Value3",  SOURCE, getSensorId("TPWR") },
+  { "Value4",  SOURCE, getSensorId("RQly") },
+  { "Value5",  SOURCE, nil },
+  { "Value6",  SOURCE, nil },
   { "Value7",  SOURCE, nil },
   { "Value8",  SOURCE, nil },
   { "Value9",  SOURCE, nil },
@@ -321,13 +341,8 @@ end
 
 
 local function background(wgt)
-  --  wgt.counter = wgt.counter + 1
-  -- local modelInfo = model.getInfo()
-  -- wgt.modelName = modelInfo.name
-  -- wgt.modelBitmap = modelInfo.bitmap
+  -- nothing here yet
 end
-
-
 
 function refresh(wgt)
   local modelInfo = model.getInfo()
