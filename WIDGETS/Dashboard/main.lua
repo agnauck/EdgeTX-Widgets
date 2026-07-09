@@ -1,4 +1,6 @@
 --[[
+Version: 1.0.0
+
 AUTHOR
 ======
 Alexander Gnauck (gnauck@gmail.com)
