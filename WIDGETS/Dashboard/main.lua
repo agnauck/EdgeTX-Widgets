@@ -1,5 +1,5 @@
 --[[
-Version: 1.0.0
+Version: 1.0.1
 
 AUTHOR
 ======
@@ -126,13 +126,13 @@ local function formatCachedField(sensorId)
 
   local name = info.name or "???"
 
-  print("[Widget-Log] formatCachedField: " .. sensorId)
-  print("[Widget-Log] name: " .. name)
-  if info.unit ~= nil then
-    print("[Widget-Log] unit: " .. info.unit)
-  else
-    print("[Widget-Log] unit: nil")
-  end
+  -- print("[Widget-Log] formatCachedField: " .. sensorId)
+  -- print("[Widget-Log] name: " .. name)
+  -- if info.unit ~= nil then
+  --   print("[Widget-Log] unit: " .. info.unit)
+  -- else
+  --   print("[Widget-Log] unit: nil")
+  -- end
 
   -- we override some sensor name here with the static array definition
   if NAME_OVERRIDES[name] then
@@ -196,7 +196,7 @@ local function valueRow(wgt, idx1, idx2)
       type = "rectangle",
       flexFlow = lvgl.FLOW_ROW,      
       w = lvgl.PERCENT_SIZE + 100,
-      h = lvgl.PERCENT_SIZE + (100 / VALUE_ROWS),
+      h = lvgl.PERCENT_SIZE + math.floor(100 / VALUE_ROWS),
       align = VCENTER,
       thickness = BORDER_THIKNESS,
       children = {
