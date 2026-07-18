@@ -1,5 +1,5 @@
 --[[
-Version: 1.0.1
+Version: 1.0.2
 
 AUTHOR
 ======
@@ -37,8 +37,8 @@ local UNIT_STRINGS = {
   [12] = "°F",    -- UNIT_FAHRENHEIT
   [13] = "%",     -- UNIT_PERCENT
   [14] = "mAh",   -- UNIT_MAH (Milliamp Hour)
-  [15] = "mW",    -- UNIT_WATTS
-  [16] = "W",     -- UNIT_MILLIWATTS
+  [15] = "W",     -- UNIT_WATTS
+  [16] = "mW",    -- UNIT_MILLIWATTS
   [17] = "db",    -- UNIT_DB
   [18] = "rpm",   -- UNIT_RPMS
   [19] = "g",     -- UNIT_G
