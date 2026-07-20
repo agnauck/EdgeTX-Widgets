@@ -1,5 +1,5 @@
 --[[
-Version: 1.0.2
+Version: 1.0.3
 
 AUTHOR
 ======
@@ -92,7 +92,7 @@ end
 -- end
 
 
-local options = {
+local options = {  
   { "Value1",  SOURCE, getSensorId("tx-voltage") },
   { "Value2",  SOURCE, getSensorId("RxBt") },
   { "Value3",  SOURCE, getSensorId("TPWR") },
@@ -116,17 +116,17 @@ local function isTimer(id)
   return id == "T1" or id == "T2" or id == "T3"
 end
 
-local function formatCachedField(sensorId)
+local function formatValueField(sensorId)
   if not sensorId or sensorId == 0 then return "---", "---" end
   local rawValue = getValue(sensorId)
-  if not rawValue or type(rawValue) == "table" then return "---", "---" end
+  if not rawValue or type(rawValue) == "table" or rawValue == 0 then return "---", "---" end  
 
   local info = getFieldInfo(sensorId)
   if not info then return "---", "---" end
 
   local name = info.name or "???"
 
-  -- print("[Widget-Log] formatCachedField: " .. sensorId)
+  -- print("[Widget-Log] formatValueField: " .. sensorId)
   -- print("[Widget-Log] name: " .. name)
   -- if info.unit ~= nil then
   --   print("[Widget-Log] unit: " .. info.unit)
@@ -278,15 +278,13 @@ local function update(wgt, options)
 
     if sourceId and sourceId ~= 0 then
       wgt.activeSensorCount = i
-      local valStr, sName = formatCachedField(sourceId)
+      local valStr, sName = formatValueField(sourceId)      
       wgt.displayData[i].name = sName
-      wgt.displayData[i].value = valStr
+      wgt.displayData[i].value = valStr      
     else
       break
     end
   end
-
-
 
   VALUE_ROWS = math.max(1, math.ceil(wgt.activeSensorCount / 2))
 
@@ -340,8 +338,6 @@ local function update(wgt, options)
   })
 end
 
-
-
 local function background(wgt)
   -- nothing here yet
 end
@@ -356,8 +352,13 @@ function refresh(wgt)
     local sourceId = wgt.options[optKey]
 
     if sourceId and sourceId ~= 0 then
-      local valStr, _ = formatCachedField(sourceId)
-      wgt.displayData[i].value = valStr
+      local valStr, _ = formatValueField(sourceId)
+      -- when the telemetry stream disconnect we receive --- as valu
+      -- we don't want to overwrite the last known value with "---"
+      -- When the model is turned off we then still can see the last know values on the dashboard
+      if valStr ~= "---" then
+        wgt.displayData[i].value = valStr      
+      end      
     end
   end
 end
