@@ -119,7 +119,7 @@ end
 local function formatValueField(sensorId)
   if not sensorId or sensorId == 0 then return "---", "---" end
   local rawValue = getValue(sensorId)
-  if not rawValue or type(rawValue) == "table" or rawValue == 0 then return "---", "---" end  
+  if not rawValue or type(rawValue) == "table" then return "---", "---" end  
 
   local info = getFieldInfo(sensorId)
   if not info then return "---", "---" end
@@ -137,6 +137,10 @@ local function formatValueField(sensorId)
   -- we override some sensor name here with the static array definition
   if NAME_OVERRIDES[name] then
     name = NAME_OVERRIDES[name]
+  end
+
+  if rawValue == 0 then
+    return "---", name
   end
 
   if isTimer(name) then
