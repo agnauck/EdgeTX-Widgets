@@ -1,5 +1,5 @@
 --[[
-Version: 1.0.3
+Version: 1.0.4
 
 AUTHOR
 ======
@@ -113,58 +113,33 @@ local function hms(tim)
 end
 
 local function isTimer(id)
-  return id == "T1" or id == "T2" or id == "T3"
+  --return id == "T1" or id == "T2" or id == "T3"
+  return id == "timer1" or id == "timer2" or id == "timer3"
 end
 
-local function formatValueField(sensorId)
-  if not sensorId or sensorId == 0 then return "---", "---" end
-  local rawValue = getValue(sensorId)
-  if not rawValue or type(rawValue) == "table" then return "---", "---" end  
+local function formatValueField(data)
+  
+  local rawValue = getSourceValue(data.sensorName)
+  if not rawValue or rawValue == nil or type(rawValue) == "table" then return nil end
 
-  local info = getFieldInfo(sensorId)
-  if not info then return "---", "---" end
-
-  local name = info.name or "???"
-
-  -- print("[Widget-Log] formatValueField: " .. sensorId)
-  -- print("[Widget-Log] name: " .. name)
-  -- if info.unit ~= nil then
-  --   print("[Widget-Log] unit: " .. info.unit)
-  -- else
-  --   print("[Widget-Log] unit: nil")
-  -- end
-
-  -- we override some sensor name here with the static array definition
-  if NAME_OVERRIDES[name] then
-    name = NAME_OVERRIDES[name]
-  end
-
-  if rawValue == 0 then
-    return "---", name
-  end
-
-  if isTimer(name) then
-    return hms(rawValue), name
+  if isTimer(data.sensorName) then
+    return hms(rawValue)
   end
 
   -- based on original sensor precision
-  local sensorPrec = info.prec or 0
+  local sensorPrec = data.sensorPrec or 0
   if sensorPrec > 0 then
     rawValue = rawValue / (10 ^ sensorPrec)
   end
 
-  local unitStr = UNIT_STRINGS[info.unit] or ""
-  if name == "TxBt" and unitStr == "" then
-    unitStr = "V"
-  end
-
-  local displayPrec = UNIT_PRECISION[unitStr] or 0
+  local displayPrec = UNIT_PRECISION[data.sensorUnit] or 0
 
   local formatStr = "%." .. tostring(displayPrec) .. "f"
-  local finalValue = string.format(formatStr, rawValue) .. unitStr
+  local finalValue = string.format(formatStr, rawValue) .. data.sensorUnit
 
-  return finalValue, name
+  return finalValue
 end
+
 
 local VALUE_ROWS = 0
 
@@ -179,16 +154,16 @@ local function create(zone, options)
     activeSensorCount = 0,
 
     displayData = {
-      { name = "", value = "" },
-      { name = "", value = "" },
-      { name = "", value = "" },
-      { name = "", value = "" },
-      { name = "", value = "" },
-      { name = "", value = "" },
-      { name = "", value = "" },
-      { name = "", value = "" },
-      { name = "", value = "" },
-      { name = "", value = "" }
+      { name = "", value = "", sensorId = 0, sensorName = "", sensorUnit = "", sennsorPrec = 0 },
+      { name = "", value = "", sensorId = 0, sensorName = "", sensorUnit = "", sennsorPrec = 0 },
+      { name = "", value = "", sensorId = 0, sensorName = "", sensorUnit = "", sennsorPrec = 0 },
+      { name = "", value = "", sensorId = 0, sensorName = "", sensorUnit = "", sennsorPrec = 0 },
+      { name = "", value = "", sensorId = 0, sensorName = "", sensorUnit = "", sennsorPrec = 0 },
+      { name = "", value = "", sensorId = 0, sensorName = "", sensorUnit = "", sennsorPrec = 0 },
+      { name = "", value = "", sensorId = 0, sensorName = "", sensorUnit = "", sennsorPrec = 0 },
+      { name = "", value = "", sensorId = 0, sensorName = "", sensorUnit = "", sennsorPrec = 0 },
+      { name = "", value = "", sensorId = 0, sensorName = "", sensorUnit = "", sennsorPrec = 0 },
+      { name = "", value = "", sensorId = 0, sensorName = "", sensorUnit = "", sennsorPrec = 0 }
     }
   }
 
@@ -198,7 +173,7 @@ end
 local function valueRow(wgt, idx1, idx2)
     return {
       type = "rectangle",
-      flexFlow = lvgl.FLOW_ROW,      
+      flexFlow = lvgl.FLOW_ROW,
       w = lvgl.PERCENT_SIZE + 100,
       h = lvgl.PERCENT_SIZE + math.floor(100 / VALUE_ROWS),
       align = VCENTER,
@@ -206,7 +181,7 @@ local function valueRow(wgt, idx1, idx2)
       children = {
         {
           -- left name/value pair
-          type = "rectangle",          
+          type = "rectangle",
           w = lvgl.PERCENT_SIZE + 50,
           h = lvgl.PERCENT_SIZE + 100,
           thickness = BORDER_THIKNESS,
@@ -262,8 +237,6 @@ local function valueRow(wgt, idx1, idx2)
     }
 end
 
-
-
 local function update(wgt, options)
   wgt.options = options
   lvgl.clear()
@@ -273,7 +246,13 @@ local function update(wgt, options)
   -- reset default values
   for i = 1, 10 do
     wgt.displayData[i].name = ""
-    wgt.displayData[i].value = ""
+    wgt.displayData[i].value = "---"
+
+    -- sensor data
+    wgt.displayData[i].sensorId = 0
+    wgt.displayData[i].sensorName = ""
+    wgt.displayData[i].sensorUnit = ""
+    wgt.displayData[i].sennsorPrec = 0
   end
 
   for i = 1, 10 do
@@ -282,9 +261,37 @@ local function update(wgt, options)
 
     if sourceId and sourceId ~= 0 then
       wgt.activeSensorCount = i
-      local valStr, sName = formatValueField(sourceId)      
-      wgt.displayData[i].name = sName
-      wgt.displayData[i].value = valStr      
+      
+      wgt.displayData[i].sensorId = sourceId
+
+      local info = getFieldInfo(sourceId)
+      if info then
+        wgt.displayData[i].sensorName = info.name or ""
+        wgt.displayData[i].sennsorPrec = info.prec or 0
+
+        -- get unit
+        local unitStr = UNIT_STRINGS[info.unit] or ""
+        if info.name == "tx-voltage" and unitStr == "" then
+          unitStr = "V"
+        end
+        wgt.displayData[i].sensorUnit = unitStr
+
+
+        local name = info.name or "???"  
+        -- we override some sensor name here with the static array definition
+        if NAME_OVERRIDES[name] then
+          name = NAME_OVERRIDES[name]
+        end
+        wgt.displayData[i].name = name
+      end
+
+
+      --local valStr, sName = formatValueField(sourceId)
+      local valStr = formatValueField(wgt.displayData[i])
+      if valStr ~= nil then
+        wgt.displayData[i].value = valStr
+      end
+      
     else
       break
     end
@@ -319,7 +326,7 @@ local function update(wgt, options)
             type = "label",
             color = COLOR_THEME_SECONDARY1,
             h = 30, font = DBLSIZE,
-            text = (function() return wgt.modelName end) 
+            text = (function() return wgt.modelName end)
           },
           {
             type = "image",
@@ -327,7 +334,8 @@ local function update(wgt, options)
             y = 0,
             w = wgt.zone.w * 40 / 100 - 10,
             h = wgt.zone.h - 30,
-            file = (function() return "/IMAGES/" .. wgt.modelBitmap end),                                                                                                                                                           fill = false }
+            file = (function() return "/IMAGES/" .. wgt.modelBitmap end),
+            fill = false }
         }
       },
       {
@@ -352,15 +360,12 @@ function refresh(wgt)
   wgt.modelBitmap = modelInfo.bitmap
 
   for i = 1, (wgt.activeSensorCount or 0) do
-    local optKey = "Value" .. tostring(i)
-    local sourceId = wgt.options[optKey]
-
-    if sourceId and sourceId ~= 0 then
-      local valStr, _ = formatValueField(sourceId)
-      -- when the telemetry stream disconnect we receive --- as valu
+    if wgt.displayData[i].sensorId ~= 0 then
+      local valStr = formatValueField(wgt.displayData[i])
+      -- when the telemetry stream disconnect we receive nil as value
       -- we don't want to overwrite the last known value with "---"
       -- When the model is turned off we then still can see the last know values on the dashboard
-      if valStr ~= "---" then
+      if valStr ~= nil then
         wgt.displayData[i].value = valStr      
       end      
     end
