@@ -70,7 +70,8 @@ local NAME_OVERRIDES = {
   ["tx-voltage"] = "TxBt",
   ["timer1"] = "T1",
   ["timer2"] = "T2",
-  ["timer3"] = "T3"
+  ["timer3"] = "T3",
+  ["clock"] = "Time"
 }
 
 local BORDER_THIKNESS = 0
@@ -106,15 +107,26 @@ local options = {
 }
 
 -- formats a time value to hh:mm:ss for timers
-local function hms(tim)
-  local n = math.abs(tim)  
-  local prefix = (tim < 0 and "-" or " ")
+local function hms(time)
+  local n = math.abs(time)  
+  local prefix = (time < 0 and "-" or " ")
   return prefix .. string.format("%02d:%02d:%02d", math.floor(n / 3600), math.floor((n % 3600) / 60), n % 60)
 end
 
+-- formats system clock time to hh:mm
+local function hm(time)
+  local hh = math.floor(time / 60)
+  local mm = time % 60
+
+  return string.format("%02d:%02d", hh, mm)
+end
+
 local function isTimer(id)
-  --return id == "T1" or id == "T2" or id == "T3"
   return id == "timer1" or id == "timer2" or id == "timer3"
+end
+
+local function isClock(id)
+  return id == "clock"
 end
 
 local function formatValueField(data)
@@ -124,6 +136,10 @@ local function formatValueField(data)
 
   if isTimer(data.sensorName) then
     return hms(rawValue)
+  end
+
+  if isClock(data.sensorName) then
+    return hm(rawValue)
   end
 
   -- based on original sensor precision
