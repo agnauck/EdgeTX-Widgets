@@ -76,6 +76,14 @@ local NAME_OVERRIDES = {
 
 local BORDER_THIKNESS = 0
 
+local FONT_MAP = {
+    [1] = SMLSIZE,
+    [2] = BOLD,
+    [3] = MIDSIZE,
+    [4] = DBLSIZE,    
+    [5] = XXLSIZE
+}
+
 local function getSensorId(sensor)
   local fieldInfo = getFieldInfo(sensor)
   return fieldInfo and fieldInfo.id or nil
@@ -94,6 +102,8 @@ end
 
 
 local options = {  
+  { "SizeLabel", CHOICE, 2, { "SMLSIZE", "BOLD", "MIDSIZE", "DBLSIZE", "XXLSIZE" } },
+  { "SizeValue", CHOICE, 3, { "SMLSIZE", "BOLD", "MIDSIZE", "DBLSIZE", "XXLSIZE" } },
   { "Value1",  SOURCE, getSensorId("tx-voltage") },
   { "Value2",  SOURCE, getSensorId("RxBt") },
   { "Value3",  SOURCE, getSensorId("TPWR") },
@@ -187,70 +197,73 @@ local function create(zone, options)
 end
 
 local function valueRow(wgt, idx1, idx2)
-    return {
-      type = "rectangle",
-      flexFlow = lvgl.FLOW_ROW,
-      w = lvgl.PERCENT_SIZE + 100,
-      h = lvgl.PERCENT_SIZE + math.floor(100 / VALUE_ROWS),
-      align = VCENTER,
-      thickness = BORDER_THIKNESS,
-      children = {
-        {
-          -- left name/value pair
-          type = "rectangle",
-          w = lvgl.PERCENT_SIZE + 50,
-          h = lvgl.PERCENT_SIZE + 100,
-          thickness = BORDER_THIKNESS,
-          children = {
-            {
-              type = "label",              
-              align = LEFT + VTOP,
-              color = COLOR_THEME_PRIMARY1,
-              font = SMLSIZE,
-              text = (function() return " " .. wgt.displayData[idx1].name .. ":" end)
-            },
-            {
-              type = "label",
-              w = lvgl.PERCENT_SIZE + 100,
-              align = RIGHT + VCENTER,
-              font = MIDSIZE,
-              text = (function() return wgt.displayData[idx1].value end)
-            },
-          }
-        },
-        {
-          -- right name/value pair
-          type = "rectangle",          
-          w = lvgl.PERCENT_SIZE + 50,
-          h = lvgl.PERCENT_SIZE + 100,
-          thickness = BORDER_THIKNESS,
-          children = {
-           {
-              type = "label",              
-              align = LEFT + VTOP,
-              color = COLOR_THEME_PRIMARY1,
-              font = SMLSIZE,
-              text = (function()
-                local name = wgt.displayData[idx2].name
-                if name and name ~= "" then
-                  return " " .. name .. ":"
-                else
-                  return ""
-                end
-              end)
-            },
-            {
-              type = "label",
-              --w = lvgl.PERCENT_SIZE + 50,
-              w = lvgl.PERCENT_SIZE + 100,
-              align = RIGHT + VCENTER,
-              font = MIDSIZE,
-              text = (function() return wgt.displayData[idx2].value end)
-            },
-          }
+  local fontLabel = FONT_MAP[wgt.options.SizeLabel] or SMLSIZE 
+	local fontValue = FONT_MAP[wgt.options.SizeValue] or MIDSIZE
+
+  return {
+    type = "rectangle",
+    flexFlow = lvgl.FLOW_ROW,
+    w = lvgl.PERCENT_SIZE + 100,
+    h = lvgl.PERCENT_SIZE + math.floor(100 / VALUE_ROWS),
+    align = VCENTER,
+    thickness = BORDER_THIKNESS,
+    children = {
+      {
+        -- left name/value pair
+        type = "rectangle",
+        w = lvgl.PERCENT_SIZE + 50,
+        h = lvgl.PERCENT_SIZE + 100,
+        thickness = BORDER_THIKNESS,
+        children = {
+          {
+            type = "label",              
+            align = LEFT + VTOP,
+            color = COLOR_THEME_PRIMARY1,
+            font = fontLabel,
+            text = (function() return " " .. wgt.displayData[idx1].name .. ":" end)
+          },
+          {
+            type = "label",
+            w = lvgl.PERCENT_SIZE + 100,
+            align = RIGHT + VCENTER,
+            font = fontValue,
+            text = (function() return wgt.displayData[idx1].value end)
+          },
+        }
+      },
+      {
+        -- right name/value pair
+        type = "rectangle",          
+        w = lvgl.PERCENT_SIZE + 50,
+        h = lvgl.PERCENT_SIZE + 100,
+        thickness = BORDER_THIKNESS,
+        children = {
+          {
+            type = "label",              
+            align = LEFT + VTOP,
+            color = COLOR_THEME_PRIMARY1,
+            font = fontLabel,
+            text = (function()
+              local name = wgt.displayData[idx2].name
+              if name and name ~= "" then
+                return " " .. name .. ":"
+              else
+                return ""
+              end
+            end)
+          },
+          {
+            type = "label",
+            --w = lvgl.PERCENT_SIZE + 50,
+            w = lvgl.PERCENT_SIZE + 100,
+            align = RIGHT + VCENTER,
+            font = fontValue,
+            text = (function() return wgt.displayData[idx2].value end)
+          },
         }
       }
     }
+  }
 end
 
 local function update(wgt, options)
