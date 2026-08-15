@@ -102,7 +102,7 @@ end
 
 
 local options = {  
-  { "SizeLabel", CHOICE, 2, { "SMLSIZE", "BOLD", "MIDSIZE", "DBLSIZE", "XXLSIZE" } },
+  { "SizeTitle", CHOICE, 2, { "SMLSIZE", "BOLD", "MIDSIZE", "DBLSIZE", "XXLSIZE" } },
   { "SizeValue", CHOICE, 3, { "SMLSIZE", "BOLD", "MIDSIZE", "DBLSIZE", "XXLSIZE" } },
   { "Value1",  SOURCE, getSensorId("tx-voltage") },
   { "Value2",  SOURCE, getSensorId("RxBt") },
@@ -116,11 +116,20 @@ local options = {
   { "Value10", SOURCE, nil }
 }
 
--- formats a time value to hh:mm:ss for timers
+-- formats a time value to mm:ss or hh:mm:ss for timers
 local function hms(time)
   local n = math.abs(time)  
   local prefix = (time < 0 and "-" or " ")
-  return prefix .. string.format("%02d:%02d:%02d", math.floor(n / 3600), math.floor((n % 3600) / 60), n % 60)
+  
+  local hours = math.floor(n / 3600)
+  local minutes = math.floor((n % 3600) / 60)
+  local seconds = n % 60
+  
+  if hours > 0 then
+    return prefix .. string.format("%02d:%02d:%02d", hours, minutes, seconds)
+  else
+    return prefix .. string.format("%02d:%02d", minutes, seconds)
+  end
 end
 
 -- formats system clock time to hh:mm
@@ -197,7 +206,7 @@ local function create(zone, options)
 end
 
 local function valueRow(wgt, idx1, idx2)
-  local fontLabel = FONT_MAP[wgt.options.SizeLabel] or SMLSIZE 
+  local fontLabel = FONT_MAP[wgt.options.SizeTitle] or SMLSIZE 
 	local fontValue = FONT_MAP[wgt.options.SizeValue] or MIDSIZE
 
   return {
